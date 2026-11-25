@@ -1,0 +1,42 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Companion APK
+        run: |
+          cd companion-apk
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Package Scripts
+        run: |
+          tar -czf firetv-airplay-fixer-macos.tar.gz macos/
+          zip -r firetv-airplay-fixer-windows.zip windows/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            companion-apk/build/firetv-adb-fixer.apk
+            firetv-airplay-fixer-macos.tar.gz
+            firetv-airplay-fixer-windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

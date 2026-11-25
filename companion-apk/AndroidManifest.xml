@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fire TV ADB Fixer: Keeps network ADB (port 5555) accessible across reboots.
+     Required on Fire OS 8.1.8.5+ which sets Settings.Global.ADB_ENABLED=0 during boot.
+     No UI, no internet permission. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.github.vladislavekimtcov.firetvfixer">
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Granted over adb during setup via 'pm grant' -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+
+    <application
+        android:label="Fire TV ADB Fixer"
+        android:allowBackup="false">
+
+        <!-- Fired automatically on system boot -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Internal alarm receiver for +45s and +120s re-checks -->
+        <receiver
+            android:name=".CheckReceiver"
+            android:exported="false" />
+
+        <!-- Diagnostic hook for testing via adb:
+             adb shell am broadcast -n io.github.vladislavekimtcov.firetvfixer/.NowReceiver -->
+        <receiver
+            android:name=".NowReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+    </application>
+</manifest>
